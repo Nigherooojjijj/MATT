@@ -1,0 +1,11 @@
+{
+  "name": "rfid-rc522",
+  "version": "0.0.1",
+  "description": "Erweiterung für das RFID RC522 Modul am Calliope Mini V3",
+  "dependencies": {
+    "core": "*"
+  },
+  "files": [
+    "main.ts"
+  ]
+}
