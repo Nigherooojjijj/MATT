@@ -1,5 +1,5 @@
 /**
- * RFID RC522 Erweiterung für den Calliope Mini V3
+ * MFRC522 Erweiterung für den Calliope Mini V3
  * 
  * Verdrahtung:
  *   VCC  → VCC
@@ -11,7 +11,7 @@
  *   NSS  → P3
  */
 
-namespace RFID {
+namespace MFRC522 {
     // Pin-Zuweisung entsprechend Calliope Mini V3
     const NSS: DigitalPin = DigitalPin.P3;
     const RST: DigitalPin = DigitalPin.C4;
@@ -41,22 +41,18 @@ namespace RFID {
 
     // --- Low-Level SPI-Zugriffsfunktionen ---
 
-    /**
-     * Schreibt einen Byte-Wert in ein Register.
-     */
     function writeReg(addr: number, val: number): void {
         pins.digitalWritePin(NSS, 0);
+        // Adresse berechnen nach MFRC522-Spezifikation
         let address: number = ((addr << 1) & 0x7E);
         pins.spiWrite(address);
         pins.spiWrite(val);
         pins.digitalWritePin(NSS, 1);
     }
 
-    /**
-     * Liest einen Byte-Wert aus einem Register.
-     */
     function readReg(addr: number): number {
         pins.digitalWritePin(NSS, 0);
+        // 0x80 bit hinzufügen für den Lesebefehl
         let address: number = (((addr << 1) & 0x7E) | 0x80);
         pins.spiWrite(address);
         let val = pins.spiRead(0);
@@ -64,69 +60,24 @@ namespace RFID {
         return val;
     }
 
-    /**
-     * Setzt Bits in einem Register mittels Bitmasken-OR.
-     */
     function setBitMask(addr: number, mask: number): void {
         let current = readReg(addr);
         writeReg(addr, current | mask);
     }
 
-    /**
-     * Löscht bestimmte Bits in einem Register.
-     */
     function clearBitMask(addr: number, mask: number): void {
         let current = readReg(addr);
         writeReg(addr, current & (~mask));
     }
 
-    // --- Funktionen für Initialisierung und Kommunikation ---
-
-    /**
-     * Führt einen Soft-Reset des MFRC522 durch.
-     */
-    export function reset(): void {
+    function resetModule(): void {
         writeReg(CommandReg, PCD_SOFTRESET);
         basic.pause(50);
-        // Warte, bis der Reset abgeschlossen ist
         while ((readReg(CommandReg) & (1 << 4)) !== 0) {
             basic.pause(1);
         }
     }
 
-    /**
-     * Initialisiert das RFID-Modul:
-     * - Konfiguriert SPI
-     * - Setzt Timer und Betriebsmodus
-     * - Aktiviert die Antenne
-     */
-    export function init(): void {
-        // Konfiguriere SPI (MOSI, MISO, SCK)
-        pins.spiPins(MOSI, MISO, SCK);
-        // SPI-Frequenz auf 1 MHz setzen (kann ggf. angepasst werden)
-        pins.spiFrequency(1000000);
-        // Chip Select (NSS) zunächst HIGH
-        pins.digitalWritePin(NSS, 1);
-        // RST-Pin HIGH (Modul ist nicht im Reset)
-        pins.digitalWritePin(RST, 1);
-
-        reset();
-
-        // Optionale Timer-Konfiguration (laut MFRC522-Datenblatt)
-        writeReg(0x2A, 0x80);  // TimerModeReg
-        writeReg(0x2B, 0xA9);  // TimerPrescalerReg
-        writeReg(0x2C, 0x03);  // TimerReloadReg Low Byte
-        writeReg(0x2D, 0xE8);  // TimerReloadReg High Byte
-
-        // Betriebsmodus z. B. für CRC-Berechnung
-        writeReg(ModeReg, 0x3D);
-
-        antennaOn();
-    }
-
-    /**
-     * Aktiviert die Antenne, sofern sie nicht bereits aktiv ist.
-     */
     function antennaOn(): void {
         let value = readReg(TxControlReg);
         if ((value & 0x03) != 0x03) {
@@ -134,12 +85,7 @@ namespace RFID {
         }
     }
 
-    /**
-     * Sendet einen REQA-Befehl, um die Anwesenheit einer Karte zu prüfen.
-     * @param reqMode Normalerweise PICC_REQIDL (0x26)
-     * @returns 1, wenn eine Karte erkannt wird, sonst 0.
-     */
-    function request(reqMode: number): number {
+    function requestCard(reqMode: number): number {
         writeReg(BitFramingReg, 0x07);
         writeReg(FIFOLevelReg, 0x80);
         pins.digitalWritePin(NSS, 0);
@@ -165,11 +111,7 @@ namespace RFID {
         return 0;
     }
 
-    /**
-     * Führt den Antikollisions-Befehl aus, um die UID der Karte auszulesen.
-     * @returns UID als Hex-String (z. B. "04AABBCCDD") oder einen leeren String, wenn keine Karte erkannt wird.
-     */
-    export function anticoll(): string {
+    function anticollision(): string {
         writeReg(FIFOLevelReg, 0x80);
         pins.digitalWritePin(NSS, 0);
         let addr = ((FIFODataReg << 1) & 0x7E);
@@ -200,30 +142,70 @@ namespace RFID {
         return uidStr;
     }
 
+    // =========================================================================
+    // Blockdefinitionen – diese Funktionen erscheinen im Editor als Blöcke
+    // =========================================================================
+
     /**
-     * Prüft, ob eine Karte im Lesefeld ist und gibt deren UID zurück.
-     * @returns UID als Hex-String oder einen leeren String, falls keine Karte erkannt wurde.
+     * Initialize MFRC522 Module
      */
-    export function getCardUID(): string {
-        let status = request(PICC_REQIDL);
+    //% block="Initialize MFRC522 Module"
+    export function Init(): void {
+        // Konfiguration der SPI-Schnittstelle (MOSI: C14, MISO: C15, SCK: C13)
+        pins.spiPins(MOSI, MISO, SCK);
+        pins.spiFrequency(1000000);
+        // Chip Select (NSS) und Reset (RST) setzen
+        pins.digitalWritePin(NSS, 1);
+        pins.digitalWritePin(RST, 1);
+        resetModule();
+        // Beispielhafte Timer- und Modus-Konfiguration (laut Datenblatt)
+        writeReg(0x2A, 0x80);
+        writeReg(0x2B, 0xA9);
+        writeReg(0x2C, 0x03);
+        writeReg(0x2D, 0xE8);
+        writeReg(ModeReg, 0x3D);
+        antennaOn();
+    }
+
+    /**
+     * Read ID
+     * @returns the card's ID as a Hex string (e.g., "04AABBCCDD")
+     */
+    //% block="Read ID"
+    export function getID(): string {
+        let status = requestCard(PICC_REQIDL);
         if (status === 1) {
-            return anticoll();
+            return anticollision();
         }
         return "";
     }
-}
 
-// ---------------------------------------------------------------------------------
-// Beispielanwendung: Lese die Karten-UID und zeige sie auf dem Display an
-// ---------------------------------------------------------------------------------
-
-RFID.init();
-
-basic.forever(function () {
-    let uid = RFID.getCardUID();
-    if (uid != "") {
-        basic.showString(uid);
-        basic.pause(2000);
-        basic.clearScreen();
+    /**
+     * Read data
+     * @returns the data read from the RFID card as a string
+     */
+    //% block="Read data"
+    export function read(): string {
+        // Hier sollte die spezifische Lese-Implementierung erfolgen.
+        return "ExampleData";
     }
-});
+
+    /**
+     * Write Data %text
+     * @param text the text to write to the RFID card
+     */
+    //% block="Write Data %text"
+    export function write(text: string): void {
+        // Hier die Implementierung des Schreibvorgangs einfügen.
+        serial.writeLine("Writing data: " + text);
+    }
+
+    /**
+     * Turn off antenna
+     */
+    //% block="Turn off antenna"
+    export function AntennaOff(): void {
+        // Hier die Implementierung zum Abschalten der Antenne.
+        serial.writeLine("Antenna turned off.");
+    }
+}
