@@ -1,47 +1,33 @@
-MakeCode Package for the Calliope Mini V3 - RFID Module (MFRC522)
-Beschreibung
+# RFID-RC522-Funduino
+# MakeCode Package for the Joy-IT SBC-RFID-RC522 RFID module (MFRC522)
 
-Diese Bibliothek stellt ein Microsoft MakeCode-Paket für das Joy-IT SBC-RFID-RC522 RFID-Modul bereit. Weitere Informationen zum Modul findest du hier:https://joy-it.net/de/products/SBC-RFID-RC522
-Verbindung
+This library provides a Microsoft MakeCode package for the Joy-IT SBC-RFID-RC522 RFID module. See [Joy-IT SBC-RFID-RC522](https://joy-it.net/products/SBC-RFID-RC522) for more details.
 
-Das RFID-Modul muss mit sechs Pins an den Calliope Mini V3 angeschlossen werden:
-RFID-Modul	Calliope Mini V3
-VCC	VCC
-GND	GND
-MISO	C15
-MOSI	C14
-SCK	C13
-NSS	P3
-Funktionen
-Initialisiere RFID-Modul
+## Connection
 
-Das RFID-Modul muss vor der Verwendung initialisiert werden. Alle notwendigen Befehle werden über SPI übertragen.
-// Initialisiere RFID-Modul
-MFRC522.Init();
-Lese UID von der Karte
+The RFID module needs to be connected with six pins to the Micro:bit:
 
-Diese Funktion liest die eindeutige ID der Karte aus und gibt sie zurück.
-// Lese eindeutige UID
-MFRC522.getID();
-Lese Daten von der Karte
+| RFID module | Calliope  |
+|-------------|-----------|
+| VCC         | 3V        |
+| GND         | GND       |
+| MISO        | P15       |
+| MOSI        | P14       |
+| SCK         | P13       |
+| NSS         | P03       |
+| RST         | C4       |
+## Initialize RFID module
 
-Gespeicherte Daten auf der RFID-Karte können mit dieser Funktion abgerufen werden.
-// Lese Daten
-MFRC522.read();
-Schreibe Daten auf die Karte
+The RFID module needs to be initialized before it is ready to use. All necessary commands will be transferred via SPI here.
 
-Schreibt Daten (als Zeichenfolge) auf die RFID-Karte.
-// Schreibe Daten
-MFRC522.write("1234");
-Antenne ausschalten
-
-Nach der Verwendung kann die RFID-Antenne deaktiviert werden, um Energie zu sparen.
-// Antenne ausschalten
-MFRC522.AntennaOff();
-Unterstützte Ziele
-
-✅ MakeCode für Calliope Mini V3
-Lizenz
-
-Diese Bibliothek steht unter der MIT-Lizenz.
-
+```typescript
+// Initialize RFID module
+MFRC522.Init()
+// Read unique ID
+MFRC522.getID()
+// Read data
+MFRC522.read()
+// Write data
+MFRC522.write("1234")
+// Turn antenna off
+MFRC522.AntennaOff()
