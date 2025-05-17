@@ -1,11 +1,13 @@
 {
-  "name": "rfid-rc522",
-  "version": "0.0.1",
-  "description": "Erweiterung für das RFID RC522 Modul am Calliope Mini V3",
+  "name": "pxt-mfrc522b22e",
+  "version": "1.0.0",
+  "description": "MakeCode package for the MFRC522 RFID module.",
   "dependencies": {
     "core": "*"
   },
   "files": [
-    "main.ts"
-  ]
+    "main.ts",
+    "pxt-mfrc522-strings.json"
+  ],
+  "icon": "icon.png"
 }
