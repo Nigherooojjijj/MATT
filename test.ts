@@ -1,9 +1,26 @@
-MFRC522.Init() → Initialisiert das RFID-Modul.
+/**
+ * test.ts - Testprogramm für die MFRC522-Erweiterung auf dem Calliope Mini
+ */
 
-MFRC522.getID() → Liest die UID der Karte.
+// Initialisiere das RFID-Modul
+MFRC522.Init();
 
-MFRC522.read() → Ruft gespeicherte Daten aus der Karte ab.
+// Versuche, die ID der RFID-Karte auszulesen
+let id = MFRC522.getID();
+serial.writeLine("RFID Card ID: " + id.toString());
 
-MFRC522.write("1234") → Schreibt „1234“ auf die Karte.
+// Versuche, die Daten von der Karte zu lesen
+let data = MFRC522.read();
+serial.writeLine("Data read: " + data);
 
-MFRC522.AntennaOff() → Schaltet die Antenne aus.
+// Schreibe den Text "1234" auf die Karte
+MFRC522.write("1234");
+serial.writeLine("Data '1234' written.");
+
+// Schalte die Antenne aus
+MFRC522.AntennaOff();
+serial.writeLine("Antenna off.");
+
+// Optionale Pause und Bildschirm löschen (wenn ein LED-Display vorhanden ist)
+basic.pause(2000);
+basic.clearScreen();
