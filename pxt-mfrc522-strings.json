@@ -4,15 +4,5 @@
   "MFRC522.getID|block": "Read ID",
   "MFRC522.read|block": "Read data",
   "MFRC522.write|block": "Write Data %text",
-  "{id:category}MFRC522": "MFRC522",
-  "MFRC522.AntennaOff|tooltip": "Turns off the RFID module antenna",
-  "MFRC522.Init|tooltip": "Initializes the MFRC522 module, setting up SPI and necessary pins",
-  "MFRC522.getID|tooltip": "Reads and returns the UID from the RFID tag",
-  "MFRC522.read|tooltip": "Reads stored data from the RFID tag",
-  "MFRC522.write|tooltip": "Writes the specified text to the RFID tag",
-  "MFRC522.AntennaOff|group": "RFID Control",
-  "MFRC522.Init|group": "RFID Control",
-  "MFRC522.getID|group": "RFID Data",
-  "MFRC522.read|group": "RFID Data",
-  "MFRC522.write|group": "RFID Data"
+  "{id:category}MFRC522": "MFRC522"
 }
